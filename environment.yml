@@ -1,0 +1,11 @@
+﻿name: sts-map
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - pytest>=8.3
+      - ruff>=0.6
+      - mypy>=1.11

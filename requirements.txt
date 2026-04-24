@@ -1,0 +1,2 @@
+# Runtime dependencies
+# Keep empty for now: current skeleton uses Python stdlib only.
