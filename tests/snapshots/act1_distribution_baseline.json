@@ -1,0 +1,22 @@
+{
+  "version": "0.5.1",
+  "act": "act1",
+  "ascension": 10,
+  "seed_start": 0,
+  "seed_end": 49,
+  "sample_count": 50,
+  "room_counter": {
+    "boss": 180,
+    "elite": 163,
+    "monster": 1517,
+    "question": 610,
+    "rest": 174,
+    "shop": 244,
+    "special_elite": 50,
+    "treasure": 212
+  },
+  "edge_total": 3500,
+  "edge_mean": 70.0,
+  "floor_mean": 16.0,
+  "special_elite_total": 50
+}

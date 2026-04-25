@@ -3,14 +3,15 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from collections.abc import Sequence
 
-from sts_map.config.schema import ActRuleConfig
+from sts_map.config.schema import ActRuleConfig, DistributionValidationConfig, RatioRange
 from sts_map.domain.enums import ActId, RoomType
 from sts_map.domain.models import Edge, GenerationInput, MapGraph, NodeId
 from sts_map.domain.state import GenerationContext, ValidationIssue, ValidationReport
 
 
 class MapValidator:
-    _DIST_MIN_SAMPLES = 30
+    def __init__(self, dist_cfg: DistributionValidationConfig | None = None) -> None:
+        self._dist_cfg = dist_cfg or DistributionValidationConfig()
 
     def validate_all(
         self,
@@ -169,11 +170,11 @@ class MapValidator:
         if not samples:
             return [ValidationIssue(code="DIST_EMPTY_SAMPLES", message="distribution samples are empty")]
 
-        if len(samples) < self._DIST_MIN_SAMPLES:
+        if len(samples) < self._dist_cfg.min_samples:
             issues.append(
                 ValidationIssue(
                     code="DIST_LOW_SAMPLE_COUNT",
-                    message=f"sample count {len(samples)} is below recommended minimum {self._DIST_MIN_SAMPLES}",
+                    message=f"sample count {len(samples)} is below recommended minimum {self._dist_cfg.min_samples}",
                 )
             )
 
@@ -216,7 +217,7 @@ class MapValidator:
         shop_ratio = room_counter[RoomType.SHOP] / total_rooms
         question_ratio = room_counter[RoomType.QUESTION] / total_rooms
 
-        if not (0.20 <= monster_ratio <= 0.80):
+        if not self._in_ratio_range(monster_ratio, self._dist_cfg.monster_ratio):
             issues.append(
                 ValidationIssue(
                     code="DIST_MONSTER_RATIO",
@@ -224,7 +225,7 @@ class MapValidator:
                 )
             )
 
-        if not (0.02 <= elite_like_ratio <= 0.40):
+        if not self._in_ratio_range(elite_like_ratio, self._dist_cfg.elite_like_ratio):
             issues.append(
                 ValidationIssue(
                     code="DIST_ELITE_RATIO",
@@ -232,7 +233,7 @@ class MapValidator:
                 )
             )
 
-        if not (0.01 <= shop_ratio <= 0.25):
+        if not self._in_ratio_range(shop_ratio, self._dist_cfg.shop_ratio):
             issues.append(
                 ValidationIssue(
                     code="DIST_SHOP_RATIO",
@@ -240,7 +241,7 @@ class MapValidator:
                 )
             )
 
-        if not (0.05 <= question_ratio <= 0.60):
+        if not self._in_ratio_range(question_ratio, self._dist_cfg.question_ratio):
             issues.append(
                 ValidationIssue(
                     code="DIST_QUESTION_RATIO",
@@ -306,3 +307,6 @@ class MapValidator:
         for nodes in graph.nodes_by_floor.values():
             count += sum(1 for node in nodes if node.room_type == room_type)
         return count
+
+    def _in_ratio_range(self, value: float, ratio: RatioRange) -> bool:
+        return ratio.min_value <= value <= ratio.max_value

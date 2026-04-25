@@ -4,6 +4,21 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
+class RatioRange:
+    min_value: float
+    max_value: float
+
+
+@dataclass(frozen=True, slots=True)
+class DistributionValidationConfig:
+    min_samples: int = 30
+    monster_ratio: RatioRange = RatioRange(0.20, 0.80)
+    elite_like_ratio: RatioRange = RatioRange(0.02, 0.40)
+    shop_ratio: RatioRange = RatioRange(0.01, 0.25)
+    question_ratio: RatioRange = RatioRange(0.05, 0.60)
+
+
+@dataclass(frozen=True, slots=True)
 class RoomWeightConfig:
     monster: float
     elite: float
