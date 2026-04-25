@@ -93,18 +93,19 @@ class RoomAllocator:
         rng: random.Random | None = None,
     ) -> None:
         rng = rng or random.Random(0)
-        pool = self._repair_candidates(graph)
+        shop_pool = self._repair_candidates(graph, target=RoomType.SHOP)
+        elite_pool = self._repair_candidates(graph, target=RoomType.ELITE)
 
         current_shop = self._count_room_type(graph, RoomType.SHOP)
-        while current_shop < min_shop and pool:
-            node = pool.pop(0)
+        while current_shop < min_shop and shop_pool:
+            node = shop_pool.pop(0)
             node.room_type = RoomType.SHOP
             node.display_type = RoomType.SHOP
             current_shop += 1
 
         current_elite = self._count_room_type(graph, RoomType.ELITE)
-        while current_elite < min_elite and pool:
-            node = pool.pop(0)
+        while current_elite < min_elite and elite_pool:
+            node = elite_pool.pop(0)
             node.room_type = RoomType.ELITE
             node.display_type = RoomType.ELITE
             current_elite += 1
@@ -123,10 +124,12 @@ class RoomAllocator:
             count += sum(1 for node in nodes if node.room_type == room_type)
         return count
 
-    def _repair_candidates(self, graph: MapGraph) -> list[RoomNode]:
+    def _repair_candidates(self, graph: MapGraph, target: RoomType) -> list[RoomNode]:
         candidates: list[RoomNode] = []
         for floor in sorted(graph.nodes_by_floor.keys()):
             if floor in (0, 14, 15):
+                continue
+            if target == RoomType.ELITE and floor in (1, 2, 3):
                 continue
             for node in graph.nodes_by_floor[floor]:
                 if node.room_type in {RoomType.MONSTER, RoomType.QUESTION, RoomType.TREASURE}:

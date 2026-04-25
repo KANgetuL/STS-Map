@@ -5,6 +5,14 @@ Build a reproducible, rule-driven, and extensible STS map generator with testabl
 
 ## Timeline and Milestones
 
+## Current Progress
+- Phase 0: completed
+- Phase 1: completed
+- Phase 2: completed
+- Phase 3: completed
+- Phase 4: completed
+- Phase 5: in progress (validator/distribution/repro regression tests being added)
+
 ### Phase 0 - Environment and Baseline (Week 1)
 - Scope:
   - Standardize local setup with conda and dependency files.

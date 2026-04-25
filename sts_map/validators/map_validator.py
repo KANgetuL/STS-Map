@@ -10,6 +10,8 @@ from sts_map.domain.state import GenerationContext, ValidationIssue, ValidationR
 
 
 class MapValidator:
+    _DIST_MIN_SAMPLES = 30
+
     def validate_all(
         self,
         graph: MapGraph,
@@ -163,12 +165,110 @@ class MapValidator:
         return issues
 
     def validate_distribution(self, samples: Sequence[MapGraph]) -> list[ValidationIssue]:
-        _ = samples
-        return []
+        issues: list[ValidationIssue] = []
+        if not samples:
+            return [ValidationIssue(code="DIST_EMPTY_SAMPLES", message="distribution samples are empty")]
+
+        if len(samples) < self._DIST_MIN_SAMPLES:
+            issues.append(
+                ValidationIssue(
+                    code="DIST_LOW_SAMPLE_COUNT",
+                    message=f"sample count {len(samples)} is below recommended minimum {self._DIST_MIN_SAMPLES}",
+                )
+            )
+
+        invalid_structure = 0
+        room_counter: defaultdict[RoomType, int] = defaultdict(int)
+        total_rooms = 0
+
+        for sample in samples:
+            if self.validate_structure(sample):
+                invalid_structure += 1
+
+            for nodes in sample.nodes_by_floor.values():
+                for node in nodes:
+                    if node.room_type is None:
+                        continue
+                    room_counter[node.room_type] += 1
+                    total_rooms += 1
+
+        if invalid_structure > 0:
+            issues.append(
+                ValidationIssue(
+                    code="DIST_INVALID_STRUCTURE_FOUND",
+                    message=f"{invalid_structure} samples failed structural validation",
+                )
+            )
+
+        if total_rooms == 0:
+            issues.append(
+                ValidationIssue(
+                    code="DIST_NO_ROOM_DATA",
+                    message="no room data found in samples",
+                )
+            )
+            return issues
+
+        monster_ratio = room_counter[RoomType.MONSTER] / total_rooms
+        elite_like_ratio = (
+            room_counter[RoomType.ELITE] + room_counter[RoomType.SPECIAL_ELITE]
+        ) / total_rooms
+        shop_ratio = room_counter[RoomType.SHOP] / total_rooms
+        question_ratio = room_counter[RoomType.QUESTION] / total_rooms
+
+        if not (0.20 <= monster_ratio <= 0.80):
+            issues.append(
+                ValidationIssue(
+                    code="DIST_MONSTER_RATIO",
+                    message=f"monster ratio out of range: {monster_ratio:.3f}",
+                )
+            )
+
+        if not (0.02 <= elite_like_ratio <= 0.40):
+            issues.append(
+                ValidationIssue(
+                    code="DIST_ELITE_RATIO",
+                    message=f"elite-like ratio out of range: {elite_like_ratio:.3f}",
+                )
+            )
+
+        if not (0.01 <= shop_ratio <= 0.25):
+            issues.append(
+                ValidationIssue(
+                    code="DIST_SHOP_RATIO",
+                    message=f"shop ratio out of range: {shop_ratio:.3f}",
+                )
+            )
+
+        if not (0.05 <= question_ratio <= 0.60):
+            issues.append(
+                ValidationIssue(
+                    code="DIST_QUESTION_RATIO",
+                    message=f"question ratio out of range: {question_ratio:.3f}",
+                )
+            )
+
+        return issues
 
     def validate_reproducibility(self, input_data: GenerationInput) -> list[ValidationIssue]:
-        _ = input_data
-        return []
+        issues: list[ValidationIssue] = []
+        if input_data.rule_version.strip() == "":
+            issues.append(
+                ValidationIssue(
+                    code="REPRO_RULE_VERSION_EMPTY",
+                    message="rule_version must be non-empty for reproducibility tracking",
+                )
+            )
+
+        if input_data.ascension < 0 or input_data.ascension > 20:
+            issues.append(
+                ValidationIssue(
+                    code="REPRO_ASCENSION_RANGE",
+                    message="ascension must be between 0 and 20",
+                )
+            )
+
+        return issues
 
     def _can_connect(self, src: NodeId, dst: NodeId) -> bool:
         return dst.floor == src.floor + 1 and abs(dst.x - src.x) <= 1
