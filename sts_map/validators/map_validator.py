@@ -111,7 +111,10 @@ class MapValidator:
                 )
             )
 
-        if self._count_room_type(graph, RoomType.ELITE) < cfg.min_elite_count:
+        elite_like = self._count_room_type(graph, RoomType.ELITE) + self._count_room_type(
+            graph, RoomType.SPECIAL_ELITE
+        )
+        if elite_like < cfg.min_elite_count:
             issues.append(
                 ValidationIssue(
                     code="ROOM_MIN_ELITE",
