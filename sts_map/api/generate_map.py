@@ -6,8 +6,11 @@ from sts_map.domain.models import GenerationInput, MapGraph
 from sts_map.generator.pipeline import MapGenerationService
 from sts_map.generator.room_allocator import RoomAllocator
 from sts_map.generator.topology_builder import TopologyBuilder
+from sts_map.io.serializer import map_to_payload, payload_to_json
 from sts_map.rules.rule_engine import RuleEngine
 from sts_map.validators.map_validator import MapValidator
+
+PUBLIC_API_VERSION = "1.0.0"
 
 
 def default_act_rule_config() -> ActRuleConfig:
@@ -40,3 +43,19 @@ def generate_map(input_data: GenerationInput) -> MapGraph:
         room_weights=default_room_weight_config(),
     )
     return service.generate(input_data)
+
+
+def generate_map_payload(input_data: GenerationInput) -> dict[str, object]:
+    """Generate stable export payload containing schema and version metadata."""
+    graph = generate_map(input_data)
+    return map_to_payload(
+        graph,
+        rule_version=input_data.rule_version,
+        api_version=PUBLIC_API_VERSION,
+    )
+
+
+def generate_map_json(input_data: GenerationInput, *, indent: int = 2) -> str:
+    """Generate stable export payload in JSON format."""
+    payload = generate_map_payload(input_data)
+    return payload_to_json(payload, indent=indent)

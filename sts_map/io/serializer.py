@@ -4,6 +4,8 @@ import json
 
 from sts_map.domain.models import MapGraph
 
+EXPORT_SCHEMA_VERSION = "1.0.0"
+
 
 def map_to_dict(graph: MapGraph) -> dict[str, object]:
     """Convert map graph into a JSON-serializable dictionary."""
@@ -19,7 +21,7 @@ def map_to_dict(graph: MapGraph) -> dict[str, object]:
                 }
                 for node in nodes
             ]
-            for floor, nodes in graph.nodes_by_floor.items()
+            for floor, nodes in sorted(graph.nodes_by_floor.items())
         },
         "edges": [
             {
@@ -31,6 +33,26 @@ def map_to_dict(graph: MapGraph) -> dict[str, object]:
     }
 
 
+def map_to_payload(
+    graph: MapGraph,
+    *,
+    rule_version: str,
+    api_version: str = "1.0.0",
+) -> dict[str, object]:
+    """Wrap map graph into stable export payload with metadata."""
+    return {
+        "schema_version": EXPORT_SCHEMA_VERSION,
+        "api_version": api_version,
+        "rule_version": rule_version,
+        "map": map_to_dict(graph),
+    }
+
+
 def map_to_json(graph: MapGraph, *, indent: int = 2) -> str:
     """Serialize map graph to JSON string."""
     return json.dumps(map_to_dict(graph), ensure_ascii=False, indent=indent)
+
+
+def payload_to_json(payload: dict[str, object], *, indent: int = 2) -> str:
+    """Serialize export payload to JSON string."""
+    return json.dumps(payload, ensure_ascii=False, indent=indent)
