@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sts_map.config import load_distribution_validation_config
 from sts_map.config.schema import ActRuleConfig, RoomWeightConfig
 from sts_map.domain.models import GenerationInput, MapGraph
 from sts_map.generator.pipeline import MapGenerationService
@@ -29,11 +30,12 @@ def default_room_weight_config() -> RoomWeightConfig:
 
 def generate_map(input_data: GenerationInput) -> MapGraph:
     """Public single-function entrypoint for map generation."""
+    dist_cfg = load_distribution_validation_config(input_data.act_id, input_data.ascension)
     service = MapGenerationService(
         topology_builder=TopologyBuilder(),
         room_allocator=RoomAllocator(),
         rule_engine=RuleEngine(),
-        validator=MapValidator(),
+        validator=MapValidator(dist_cfg=dist_cfg),
         act_cfg=default_act_rule_config(),
         room_weights=default_room_weight_config(),
     )

@@ -1,0 +1,35 @@
+{
+  "default": {
+    "min_samples": 30,
+    "monster_ratio": { "min": 0.20, "max": 0.80 },
+    "elite_like_ratio": { "min": 0.02, "max": 0.40 },
+    "shop_ratio": { "min": 0.01, "max": 0.25 },
+    "question_ratio": { "min": 0.05, "max": 0.60 }
+  },
+  "profiles": [
+    {
+      "act": "act1",
+      "ascension_min": 15,
+      "ascension_max": 20,
+      "config": {
+        "min_samples": 40,
+        "monster_ratio": { "min": 0.18, "max": 0.78 },
+        "elite_like_ratio": { "min": 0.03, "max": 0.45 },
+        "shop_ratio": { "min": 0.01, "max": 0.25 },
+        "question_ratio": { "min": 0.05, "max": 0.62 }
+      }
+    },
+    {
+      "act": "act2",
+      "ascension_min": 0,
+      "ascension_max": 20,
+      "config": {
+        "min_samples": 30,
+        "monster_ratio": { "min": 0.18, "max": 0.78 },
+        "elite_like_ratio": { "min": 0.02, "max": 0.42 },
+        "shop_ratio": { "min": 0.01, "max": 0.24 },
+        "question_ratio": { "min": 0.05, "max": 0.62 }
+      }
+    }
+  ]
+}

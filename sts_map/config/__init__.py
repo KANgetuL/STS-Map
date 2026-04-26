@@ -1,5 +1,6 @@
 """Configuration schemas for STS map generation."""
 
+from .distribution_loader import DistributionProfileError, load_distribution_validation_config
 from .schema import (
 	ActRuleConfig,
 	DistributionValidationConfig,
@@ -14,4 +15,6 @@ __all__ = [
 	"ActRuleConfig",
 	"RatioRange",
 	"DistributionValidationConfig",
+	"DistributionProfileError",
+	"load_distribution_validation_config",
 ]

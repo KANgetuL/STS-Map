@@ -11,7 +11,7 @@ Build a reproducible, rule-driven, and extensible STS map generator with testabl
 - Phase 2: completed
 - Phase 3: completed
 - Phase 4: completed
-- Phase 5: in progress (distribution thresholds configurable and snapshot baseline tests added)
+- Phase 5: completed (validator/repro/distribution checks closed with externalized profiles, schema validation, and snapshot regressions)
 
 ### Phase 0 - Environment and Baseline (Week 1)
 - Scope:
