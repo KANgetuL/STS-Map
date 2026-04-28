@@ -28,7 +28,10 @@ class MapGenerationService:
         self._room_weights = room_weights
 
     def generate(self, input_data: GenerationInput) -> MapGraph:
-        ctx = GenerationContext(rng_seed=input_data.seed, input=input_data)
+        import hashlib
+        seed_str = f"{input_data.seed}_{input_data.act_id.value}"
+        act_seed = int(hashlib.md5(seed_str.encode()).hexdigest()[:15], 16)
+        ctx = GenerationContext(rng_seed=act_seed, input=input_data)
 
         if input_data.act_id == ActId.ACT4:
             graph = self._rule_engine.build_fixed_act4_map(ctx)

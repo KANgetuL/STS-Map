@@ -22,6 +22,7 @@ class TopologyBuilder:
         graph = MapGraph(act_id=ctx.input.act_id, nodes_by_floor=nodes_by_floor, edges=[])
         self.generate_main_paths(graph, cfg.min_paths, cfg.max_paths, rng)
         self._saturate_connectivity(graph, rng)
+        self._add_cross_connections(graph, rng)
         self.enforce_node_load_limits(graph)
         self.prune_isolated_nodes(graph)
         return graph
@@ -147,14 +148,29 @@ class TopologyBuilder:
         graph.edges = kept
 
     def prune_isolated_nodes(self, graph: MapGraph) -> None:
-        has_in: set[NodeId] = {edge.dst for edge in graph.edges}
-        has_out: set[NodeId] = {edge.src for edge in graph.edges}
+        while True:
+            has_in: set[NodeId] = {edge.dst for edge in graph.edges}
+            has_out: set[NodeId] = {edge.src for edge in graph.edges}
 
-        for floor, nodes in graph.nodes_by_floor.items():
-            if floor == 0 or floor == max(graph.nodes_by_floor):
-                continue
-            graph.nodes_by_floor[floor] = [
-                node for node in nodes if node.id in has_in or node.id in has_out
+            removed_any = False
+            for floor, nodes in graph.nodes_by_floor.items():
+                if floor == 0 or floor == max(graph.nodes_by_floor):
+                    continue
+                valid_nodes = [
+                    node for node in nodes 
+                    if node.id in has_in and node.id in has_out
+                ]
+                if len(valid_nodes) < len(nodes):
+                    graph.nodes_by_floor[floor] = valid_nodes
+                    removed_any = True
+
+            if not removed_any:
+                break
+                
+            valid_node_ids = {n.id for nodes in graph.nodes_by_floor.values() for n in nodes}
+            graph.edges = [
+                edge for edge in graph.edges 
+                if edge.src in valid_node_ids and edge.dst in valid_node_ids
             ]
 
     def _saturate_connectivity(self, graph: MapGraph, rng: random.Random) -> None:
@@ -214,3 +230,41 @@ class TopologyBuilder:
             candidate += 1
 
         return sorted(deduped)
+
+    def _add_cross_connections(self, graph: MapGraph, rng: random.Random) -> None:
+        out_degree: defaultdict[NodeId, int] = defaultdict(int)
+        in_degree: defaultdict[NodeId, int] = defaultdict(int)
+        edge_set = {(edge.src, edge.dst) for edge in graph.edges}
+        for edge in graph.edges:
+            out_degree[edge.src] += 1
+            in_degree[edge.dst] += 1
+
+        max_floor = max(graph.nodes_by_floor)
+        for floor in range(max_floor):
+            current_nodes = list(graph.nodes_by_floor[floor])
+            next_nodes = list(graph.nodes_by_floor[floor + 1])
+            rng.shuffle(current_nodes)
+            
+            for node in current_nodes:
+                if out_degree[node.id] >= 2:
+                    continue
+                if rng.random() > 0.35:
+                    continue
+                    
+                candidates = [n.id for n in next_nodes if self.can_connect(node.id, n.id)]
+                rng.shuffle(candidates)
+                
+                for candidate in candidates:
+                    edge = Edge(src=node.id, dst=candidate)
+                    if (edge.src, edge.dst) in edge_set:
+                        continue
+                    if out_degree[edge.src] >= 2 or in_degree[edge.dst] >= 2:
+                        continue
+                    if self.would_intersect(graph.edges, edge):
+                        continue
+                        
+                    graph.edges.append(edge)
+                    edge_set.add((edge.src, edge.dst))
+                    out_degree[edge.src] += 1
+                    in_degree[edge.dst] += 1
+                    break

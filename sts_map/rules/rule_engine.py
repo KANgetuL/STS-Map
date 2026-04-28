@@ -39,7 +39,7 @@ class RuleEngine:
         elite_nodes.sort(key=lambda n: (n.id.floor, n.id.x))
         picked = elite_nodes[0]
         picked.room_type = RoomType.SPECIAL_ELITE
-        picked.display_type = RoomType.SPECIAL_ELITE
+        picked.display_type = RoomType.ELITE
         return None
 
     def build_fixed_act4_map(self, ctx: GenerationContext) -> MapGraph:
