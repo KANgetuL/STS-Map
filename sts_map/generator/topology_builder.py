@@ -14,7 +14,7 @@ class TopologyBuilder:
         rng = random.Random(ctx.rng_seed)
         nodes_by_floor: dict[int, list[RoomNode]] = {}
 
-        for floor in range(cfg.floor_count):
+        for floor in range(cfg.floor_count - 1):
             count = self.sample_floor_node_count(floor, cfg, rng)
             positions = self._compute_x_positions(count, cfg.max_nodes_per_floor)
             nodes_by_floor[floor] = [RoomNode(id=NodeId(floor=floor, x=x)) for x in positions]
@@ -24,6 +24,14 @@ class TopologyBuilder:
         self._saturate_connectivity(graph, rng)
         self._add_cross_connections(graph, rng)
         self.enforce_node_load_limits(graph)
+        
+        boss_floor = cfg.floor_count - 1
+        center_x = cfg.max_nodes_per_floor // 2
+        boss_node = RoomNode(id=NodeId(floor=boss_floor, x=center_x))
+        graph.nodes_by_floor[boss_floor] = [boss_node]
+        for node in graph.nodes_by_floor[boss_floor - 1]:
+            graph.edges.append(Edge(src=node.id, dst=boss_node.id))
+            
         self.prune_isolated_nodes(graph)
         return graph
 
@@ -154,12 +162,12 @@ class TopologyBuilder:
 
             removed_any = False
             for floor, nodes in graph.nodes_by_floor.items():
-                if floor == 0 or floor == max(graph.nodes_by_floor):
-                    continue
-                valid_nodes = [
-                    node for node in nodes 
-                    if node.id in has_in and node.id in has_out
-                ]
+                if floor == 0:
+                    valid_nodes = [node for node in nodes if node.id in has_out]
+                elif floor == max(graph.nodes_by_floor.keys()):
+                    valid_nodes = [node for node in nodes if node.id in has_in]
+                else:
+                    valid_nodes = [node for node in nodes if node.id in has_in and node.id in has_out]
                 if len(valid_nodes) < len(nodes):
                     graph.nodes_by_floor[floor] = valid_nodes
                     removed_any = True

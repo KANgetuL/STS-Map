@@ -41,7 +41,7 @@ class MapValidator:
                 )
 
         for edge in graph.edges:
-            if not self._can_connect(edge.src, edge.dst):
+            if not self._can_connect(edge.src, edge.dst, max_floor):
                 issues.append(
                     ValidationIssue(
                         code="STRUCT_ILLEGAL_EDGE",
@@ -271,7 +271,9 @@ class MapValidator:
 
         return issues
 
-    def _can_connect(self, src: NodeId, dst: NodeId) -> bool:
+    def _can_connect(self, src: NodeId, dst: NodeId, max_floor: int) -> bool:
+        if dst.floor == max_floor:
+            return dst.floor == src.floor + 1
         return dst.floor == src.floor + 1 and abs(dst.x - src.x) <= 1
 
     def _intersects(self, a: Edge, b: Edge) -> bool:
