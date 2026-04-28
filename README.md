@@ -11,6 +11,9 @@
 ### Overview
 **STS Map** is a complete Python-based procedural generation engine for replicating the map system of *Slay the Spire*. Having achieved all structural milestones, the generator accurately creates node paths across Acts (Floors 0 to 15), applying strict geometric validators, node pruning, path balancing, and deterministic seeds, concluding with a fully converged single boss node.
 
+### Image Overview
+<img src="full_sts_map.png" alt="STS Map" width="800">
+
 ### Core Features
 - **Authentic Topology:** Restricts paths, branch intersections, and respects minimum/maximum node path logic per floor.
 - **Single Boss Convergence:** Automatically routes all Floor 14 nodes exactly to the Act Boss at the apex center.
