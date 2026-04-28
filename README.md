@@ -11,8 +11,8 @@
 ### Overview
 **STS Map** is a complete Python-based procedural generation engine for replicating the map system of *Slay the Spire*. Having achieved all structural milestones, the generator accurately creates node paths across Acts (Floors 0 to 15), applying strict geometric validators, node pruning, path balancing, and deterministic seeds, concluding with a fully converged single boss node.
 
-### Image Overview
-<img src="full_sts_map.png" alt="STS Map" width="800">
+### Image Preview
+<img src="full_sts_map.png" alt="STS Map" width="400">
 
 ### Core Features
 - **Authentic Topology:** Restricts paths, branch intersections, and respects minimum/maximum node path logic per floor.
@@ -65,6 +65,9 @@ payload_json = generate_map_json(input_data)
 
 ### 项目简介
 **STS Map** 是一个基于 Python 构建的程序化地图生成引擎，旨在1:1完美还原电子游戏《杀戮尖塔》的路线生成机制。本项目已圆满完成所有既定目标，可以精确生成各幕（第0层至第15层）的节点路径，并包含极其严格的空间验证、死胡同修剪、路径负载均衡，且已完全实现了唯一的Boss节点连线汇聚逻辑与确定性的随机种子控制。
+
+### 图片预览
+<img src="full_sts_map.png" alt="STS Map" width="400">
 
 ### 核心特性
 - **真实的拓扑规则：** 严格限制路径交叉，精确模仿游戏内每层节点的分布规律与生成偏好。
